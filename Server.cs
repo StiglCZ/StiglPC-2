@@ -10,10 +10,10 @@ class Server {
     Storage storage;
     HttpListener server;
 
-    public Server(Storage storage) {
+    public Server(Storage storage, string ListenOn) {
         this.storage = storage;
         server = new HttpListener();
-        server.Prefixes.Add("http://*:8080/");
+        server.Prefixes.Add(ListenOn);
     }
 
     private void RespondWithStatus(HttpStatusCode code, HttpListenerResponse res, string? body = null) {
@@ -144,7 +144,7 @@ class Server {
             }
         } catch (HttpListenerException e)
             when (e.ErrorCode == 500) { // 500 - Listener aborted
-                Console.WriteLine("Listener aborted : " + e.Message);
+                Console.WriteLine($"Listener aborted : {e.Message}");
         }
     }
 
