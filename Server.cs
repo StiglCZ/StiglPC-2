@@ -88,7 +88,6 @@ class Server {
     }
 
     private void HandleClient(HttpListenerContext c) {
-        try {
         string? IdString = c.Request.Headers["Id"];
         string? TokenString = c.Request.Headers["Token"];
 
@@ -103,7 +102,7 @@ class Server {
             case "GET /users":
                 RespondWithStatus(HttpStatusCode.OK, c.Response, storage.GetUserList());
                 break;
-                
+
             case "DELETE /users" or "GET /delete":
                 if(Authenticated)
                     HandleDeleteUser(c, Id);
@@ -132,19 +131,20 @@ class Server {
                 RespondWithStatus(HttpStatusCode.BadRequest, c.Response);
                 break;
         }
-        } catch(Exception ex) {
-            Console.WriteLine(ex);
-            throw;
-        }
     }
 
     public void Start() {
-        server.Start();
-        while(server.IsListening) {
-            HttpListenerContext context =
-                server.GetContext();
+        try {
+            server.Start();
+            while(server.IsListening) {
+                HttpListenerContext context =
+                    server.GetContext();
 
-            Task.Run(() => HandleClient(context));
+                Task.Run(() => HandleClient(context));
+            }
+        } catch (HttpListenerException e)
+            when (e.ErrorCode == 500) { // 500 - Listener aborted
+                Console.WriteLine("Listener aborted : " + e.Message);
         }
     }
 
